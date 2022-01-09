@@ -1,0 +1,138 @@
+/*
+ * This file is part of bytesocks, licensed under the MIT License.
+ *
+ *  Copyright (c) lucko (Luck) <luck@lucko.me>
+ *  Copyright (c) contributors
+ *
+ *  Permission is hereby granted, free of charge, to any person obtaining a copy
+ *  of this software and associated documentation files (the "Software"), to deal
+ *  in the Software without restriction, including without limitation the rights
+ *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *  copies of the Software, and to permit persons to whom the Software is
+ *  furnished to do so, subject to the following conditions:
+ *
+ *  The above copyright notice and this permission notice shall be included in all
+ *  copies or substantial portions of the Software.
+ *
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *  SOFTWARE.
+ */
+
+package me.lucko.bytesocks.util;
+
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Locale;
+import java.util.Map;
+import java.util.function.Function;
+
+/**
+ * Json config wrapper class
+ */
+public class Configuration {
+
+    public static Configuration load(Path configPath) throws IOException {
+        Configuration config;
+        if (Files.exists(configPath)) {
+            try (BufferedReader reader = Files.newBufferedReader(configPath, StandardCharsets.UTF_8)) {
+                config = new Configuration(new Gson().fromJson(reader, JsonObject.class));
+            }
+        } else {
+            config = new Configuration(new JsonObject());
+        }
+        return config;
+    }
+
+    private final JsonObject jsonObject;
+
+    public Configuration(JsonObject jsonObject) {
+        this.jsonObject = jsonObject;
+    }
+
+    private <T> T get(Option option, T def, Function<String, T> parser, Function<JsonElement, T> jsonParser) {
+        String value = System.getProperty(option.keySystemProperty);
+        if (value != null) {
+            return parser.apply(value);
+        }
+
+        value = System.getenv(option.keyEnvironmentVariable);
+        if (value != null) {
+            return parser.apply(value);
+        }
+
+        JsonElement e = this.jsonObject.get(option.keyJson);
+        if (e != null) {
+            return jsonParser.apply(e);
+        }
+
+        return def;
+    }
+
+    public String getString(Option option, String def) {
+        return get(option, def, Function.identity(), JsonElement::getAsString);
+    }
+
+    public int getInt(Option option, int def) {
+        return get(option, def, Integer::parseInt, JsonElement::getAsInt);
+    }
+
+    public long getLong(Option option, long def) {
+        return get(option, def, Long::parseLong, JsonElement::getAsLong);
+    }
+
+    public Map<String, Long> getLongMap(Option option) {
+        return get(option, ImmutableMap.of(),
+                str -> Splitter.on(',').withKeyValueSeparator('=').split(str).entrySet().stream()
+                        .collect(ImmutableMap.toImmutableMap(
+                                ent -> ent.getKey().trim(),
+                                ent -> Long.parseLong(ent.getValue())
+                        )),
+                ele -> ele.getAsJsonObject().entrySet().stream()
+                        .collect(ImmutableMap.toImmutableMap(
+                                Map.Entry::getKey,
+                                ent -> ent.getValue().getAsLong()
+                        ))
+        );
+    }
+
+    public enum Option {
+
+        HOST("host", "bytesocks.http.host"),
+        PORT("port", "bytesocks.http.port"),
+        WS_URL_PREFIX("urlPrefix", "bytesocks.misc.urlprefix"),
+
+        KEY_LENGTH("keyLength", "bytesocks.misc.keylength"),
+        CHANNEL_MAX_CLIENTS("channelMaxClients", "bytesocks.misc.maxclients"),
+
+        CREATE_RATE_LIMIT_PERIOD("createRateLimitPeriodMins", "bytesocks.ratelimit.create.period"), // minutes
+        CREATE_RATE_LIMIT("createRateLimit", "bytesocks.ratelimit.create.amount"),
+
+        MSG_RATE_LIMIT_PERIOD("msgRateLimitPeriodMins", "bytesocks.ratelimit.msg.period"), // minutes
+        MSG_RATE_LIMIT("msgRateLimit", "bytesocks.ratelimit.msg.amount");
+
+        final String keyJson;
+        final String keySystemProperty;
+        final String keyEnvironmentVariable;
+
+        Option(String keyJson, String keySystemProperty) {
+            this.keyJson = keyJson;
+            this.keySystemProperty = keySystemProperty;
+            this.keyEnvironmentVariable = keySystemProperty.toUpperCase(Locale.ROOT).replace('.', '_');
+        }
+
+    }
+}
