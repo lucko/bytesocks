@@ -49,13 +49,11 @@ public final class CreateHandler implements Route.Handler {
     private final ChannelRegistry channelRegistry;
     private final RateLimiter rateLimiter;
     private final TokenGenerator tokenGenerator;
-    private final String urlPrefix;
 
-    public CreateHandler(ChannelRegistry channelRegistry, RateLimiter rateLimiter, TokenGenerator tokenGenerator, String urlPrefix) {
+    public CreateHandler(ChannelRegistry channelRegistry, RateLimiter rateLimiter, TokenGenerator tokenGenerator) {
         this.channelRegistry = channelRegistry;
         this.rateLimiter = rateLimiter;
         this.tokenGenerator = tokenGenerator;
-        this.urlPrefix = urlPrefix;
     }
 
     @Override
@@ -69,7 +67,6 @@ public final class CreateHandler implements Route.Handler {
 
         // generate a id
         String id = this.tokenGenerator.generate();
-        String url = this.urlPrefix + id;
 
         // register a new channel
         this.channelRegistry.registerNewChannel(id);
@@ -81,10 +78,10 @@ public final class CreateHandler implements Route.Handler {
 
         // return the url location as plain content
         ctx.setResponseCode(StatusCode.CREATED);
-        ctx.setResponseHeader("Location", url);
+        ctx.setResponseHeader("Location", id);
 
         ctx.setResponseType(MediaType.JSON);
-        return "{\"url\":\"" + url + "\"}";
+        return "{\"key\":\"" + id + "\"}";
     }
 
 }

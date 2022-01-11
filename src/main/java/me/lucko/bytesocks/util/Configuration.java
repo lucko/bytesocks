@@ -113,7 +113,6 @@ public class Configuration {
 
         HOST("host", "bytesocks.http.host"),
         PORT("port", "bytesocks.http.port"),
-        WS_URL_PREFIX("urlPrefix", "bytesocks.misc.urlprefix"),
 
         KEY_LENGTH("keyLength", "bytesocks.misc.keylength"),
         CHANNEL_MAX_CLIENTS("channelMaxClients", "bytesocks.misc.maxclients"),

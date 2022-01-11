@@ -91,7 +91,6 @@ public final class Bytesocks implements AutoCloseable {
                 config.getString(Option.HOST, "0.0.0.0"),
                 config.getInt(Option.PORT, 8080),
                 this.channelRegistry,
-                config.getString(Option.WS_URL_PREFIX, ""),
                 new RateLimiter(
                         // by default, allow create/connect (2 calls required) at a rate of 10 times every 30 minutes
                         // (you can create and connect to 5 channels every 30 mins)

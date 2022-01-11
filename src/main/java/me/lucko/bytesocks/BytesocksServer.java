@@ -53,10 +53,11 @@ public class BytesocksServer extends Jooby {
     /** Logger instance */
     private static final Logger LOGGER = LogManager.getLogger(BytesocksServer.class);
 
-    public BytesocksServer(String host, int port, ChannelRegistry channelRegistry, String urlPrefix, RateLimiter createRateLimiter, TokenGenerator tokenGenerator) {
+    public BytesocksServer(String host, int port, ChannelRegistry channelRegistry, RateLimiter createRateLimiter, TokenGenerator tokenGenerator) {
         ServerOptions serverOpts = new ServerOptions();
         serverOpts.setHost(host);
         serverOpts.setPort(port);
+        serverOpts.setCompressionLevel(7);
         setServerOptions(serverOpts);
 
         setExecutionMode(ExecutionMode.EVENT_LOOP);
@@ -94,7 +95,7 @@ public class BytesocksServer extends Jooby {
                 .setMaxAge(Duration.ofDays(1))));
 
         // define create channel handler
-        get("/create", new CreateHandler(channelRegistry, createRateLimiter, tokenGenerator, urlPrefix));
+        get("/create", new CreateHandler(channelRegistry, createRateLimiter, tokenGenerator));
 
         // define connect handlers
         before(new PreConnectHandler(channelRegistry, createRateLimiter));

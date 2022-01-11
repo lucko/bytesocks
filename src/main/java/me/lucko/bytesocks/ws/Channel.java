@@ -41,7 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nonnull;
 
-public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSocket.OnClose {
+public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSocket.OnClose, WebSocket.OnError {
 
     /** Logger instance */
     private static final Logger LOGGER = LogManager.getLogger(Channel.class);
@@ -83,7 +83,7 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
     public void onConnect(@Nonnull WebSocket ws) {
         this.sockets.add(ws);
 
-        LOGGER.info("[CHANNEL: connected]\n" +
+        LOGGER.info("[CONNECT]\n" +
                 "    channel id = " + this.id + "\n" +
                 "    new connected count = " + this.sockets.size() + "\n" +
                 BytesocksServer.describeForLogger(ws.getContext())
@@ -94,7 +94,7 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
     public void onClose(@Nonnull WebSocket ws, @Nonnull WebSocketCloseStatus status) {
         this.sockets.remove(ws);
 
-        LOGGER.info("[CHANNEL: disconnected]\n" +
+        LOGGER.info("[DISCONNECT]\n" +
                 "    channel id = " + this.id + "\n" +
                 "    new connected count = " + this.sockets.size() + "\n" +
                 "    status = " + status + "\n" +
@@ -118,6 +118,13 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
 
         byte[] msg = ((WebSocketMessageImpl) message).bytes();
 
+        LOGGER.info("[MESSAGE]\n" +
+                "    channel id = " + this.id + "\n" +
+                "    connected count = " + this.sockets.size() + "\n" +
+                "    message length = " + msg.length + "\n" +
+                BytesocksServer.describeForLogger(ws.getContext())
+        );
+
         // forward message
         for (WebSocket socket : this.sockets) {
             if (socket.equals(ws)) {
@@ -126,6 +133,16 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
 
             socket.send(msg);
         }
+    }
+
+    @Override
+    public void onError(@Nonnull WebSocket ws, @Nonnull Throwable cause) {
+        LOGGER.error("[ERROR]\n" +
+                "    channel id = " + this.id + "\n" +
+                "    connected count = " + this.sockets.size() + "\n" +
+                BytesocksServer.describeForLogger(ws.getContext()),
+                cause
+        );
     }
 
 }

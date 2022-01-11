@@ -67,6 +67,7 @@ public class ConnectHandler implements WebSocket.Initializer {
         configurer.onConnect(channel);
         configurer.onClose(channel);
         configurer.onMessage(channel);
+        configurer.onError(channel);
     }
 
 }
