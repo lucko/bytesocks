@@ -25,6 +25,8 @@
 
 package me.lucko.bytesocks;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import me.lucko.bytesocks.util.Configuration;
 import me.lucko.bytesocks.util.Configuration.Option;
 import me.lucko.bytesocks.util.EnvVars;
@@ -41,6 +43,9 @@ import io.jooby.ExecutionMode;
 import io.jooby.Jooby;
 
 import java.nio.file.Paths;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A websocket server.
@@ -85,6 +90,14 @@ public final class Bytesocks implements AutoCloseable {
                 ),
                 config.getInt(Option.CHANNEL_MAX_CLIENTS, 5)
         );
+
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("bytesocks-channel-auditer")
+                .build());
+
+        // audit channels every second
+        executor.scheduleAtFixedRate(this.channelRegistry::auditChannels, 1, 1, TimeUnit.SECONDS);
 
         // setup the web server
         this.server = (BytesocksServer) Jooby.createApp(new String[0], ExecutionMode.EVENT_LOOP, () -> new BytesocksServer(

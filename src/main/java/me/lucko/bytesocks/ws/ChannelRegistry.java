@@ -81,4 +81,11 @@ public class ChannelRegistry {
         return this.channels.getIfPresent(id);
     }
 
+    // audits channels by removing closed websocket connections
+    public void auditChannels() {
+        for (Channel channel : this.channels.asMap().values()) {
+            channel.audit();
+        }
+    }
+
 }

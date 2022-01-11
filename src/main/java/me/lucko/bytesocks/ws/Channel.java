@@ -75,6 +75,14 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
         }
     }
 
+    public void audit() {
+        for (WebSocket socket : this.sockets) {
+            if (!socket.isOpen()) {
+                onClose(socket, WebSocketCloseStatus.GOING_AWAY);
+            }
+        }
+    }
+
     public void close() {
         this.registry.channelClosed(this);
     }
@@ -132,6 +140,9 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
         for (WebSocket socket : this.sockets) {
             if (socket.equals(ws)) {
                 continue;
+            }
+            if (!socket.isOpen()) {
+                onClose(socket, WebSocketCloseStatus.GOING_AWAY);
             }
 
             socket.send(msg);
