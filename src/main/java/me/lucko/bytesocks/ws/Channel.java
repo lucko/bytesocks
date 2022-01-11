@@ -83,7 +83,7 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
     public void onConnect(@Nonnull WebSocket ws) {
         this.sockets.add(ws);
 
-        LOGGER.info("[CONNECT]\n" +
+        LOGGER.info("[CONNECTED]\n" +
                 "    channel id = " + this.id + "\n" +
                 "    new connected count = " + this.sockets.size() + "\n" +
                 BytesocksServer.describeForLogger(ws.getContext())
@@ -94,7 +94,7 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
     public void onClose(@Nonnull WebSocket ws, @Nonnull WebSocketCloseStatus status) {
         this.sockets.remove(ws);
 
-        LOGGER.info("[DISCONNECT]\n" +
+        LOGGER.info("[DISCONNECTED]\n" +
                 "    channel id = " + this.id + "\n" +
                 "    new connected count = " + this.sockets.size() + "\n" +
                 "    status = " + status + "\n" +
@@ -102,6 +102,9 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
         );
 
         if (this.sockets.isEmpty()) {
+            LOGGER.info("[CLOSED]\n" +
+                    "    channel id = " + this.id + "\n"
+            );
             close();
         }
     }
