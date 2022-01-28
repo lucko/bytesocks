@@ -50,19 +50,26 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
 
     /** The channel id */
     private final String id;
+    /** The ip address of the client that created the channel */
+    private final String creatorIpAddress;
     /** A collection of connected sockets */
     private final Set<WebSocket> sockets = ConcurrentHashMap.newKeySet();
     /** The rate limiter */
     private final RateLimiter rateLimiter;
 
-    public Channel(ChannelRegistry registry, String id, RateLimiter rateLimiter) {
+    public Channel(ChannelRegistry registry, String id, String creatorIpAddress, RateLimiter rateLimiter) {
         this.registry = registry;
         this.id = id;
+        this.creatorIpAddress = creatorIpAddress;
         this.rateLimiter = rateLimiter;
     }
 
     public String getId() {
         return this.id;
+    }
+
+    public String getCreatorIpAddress() {
+        return this.creatorIpAddress;
     }
 
     public int getConnectedCount() {
@@ -129,12 +136,12 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
 
         byte[] msg = ((WebSocketMessageImpl) message).bytes();
 
-        LOGGER.info("[MESSAGE]\n" +
-                "    channel id = " + this.id + "\n" +
-                "    connected count = " + this.sockets.size() + "\n" +
-                "    message length = " + msg.length + "\n" +
-                BytesocksServer.describeForLogger(ws.getContext())
-        );
+        //LOGGER.info("[MESSAGE]\n" +
+        //        "    channel id = " + this.id + "\n" +
+        //        "    connected count = " + this.sockets.size() + "\n" +
+        //        "    message length = " + msg.length + "\n" +
+        //        BytesocksServer.describeForLogger(ws.getContext())
+        //);
 
         // forward message
         for (WebSocket socket : this.sockets) {

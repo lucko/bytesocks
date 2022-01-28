@@ -46,10 +46,6 @@ USER bytesocks
 WORKDIR /opt/bytesocks
 COPY --from=build /bytesocks/target/bytesocks.jar .
 
-# define a volume for logs
-RUN mkdir logs
-VOLUME ["/opt/bytesocks/logs"]
-
 # define a healthcheck
 HEALTHCHECK --interval=1m --timeout=5s \
     CMD wget http://localhost:8080/health -q -O - | grep -c '{"status":"ok"}' || exit 1

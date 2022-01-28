@@ -25,22 +25,23 @@
 
 package me.lucko.bytesocks.ws;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 
 import me.lucko.bytesocks.util.RateLimiter;
 
-import java.util.concurrent.TimeUnit;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A registry of {@link Channel}s.
  */
 public class ChannelRegistry {
 
-    /** The channels in the registry */
-    private final Cache<String, Channel> channels = Caffeine.newBuilder()
-            .expireAfterAccess(15, TimeUnit.MINUTES)
-            .build();
+    /* The channels in the registry */
+    private final Map<String, Channel> channelsById = new ConcurrentHashMap<>();
+    private final Multimap<String, Channel> channelsByCreatorIpAddress = Multimaps.synchronizedSetMultimap(HashMultimap.create());
 
     /** The rate limiter used to limit sending messages to a channel */
     private final RateLimiter sendRateLimiter;
@@ -54,36 +55,44 @@ public class ChannelRegistry {
     }
 
     // called when a HTTP GET request is made to /create
-    public void registerNewChannel(String id) {
-        this.channels.put(id, new Channel(this, id, this.sendRateLimiter));
+    public void registerNewChannel(String id, String ipAddress) {
+        Channel channel = new Channel(this, id, ipAddress, this.sendRateLimiter);
+        this.channelsById.put(id, channel);
+        this.channelsByCreatorIpAddress.put(ipAddress, channel);
+    }
+
+    // called to check rate limits
+    public int getChannelCount(String ipAddress) {
+        return this.channelsByCreatorIpAddress.get(ipAddress).size();
     }
 
     // called when all sockets disconnect from a channel
     public void channelClosed(Channel channel) {
-        this.channels.invalidate(channel.getId());
+        this.channelsById.remove(channel.getId());
+        this.channelsByCreatorIpAddress.remove(channel.getCreatorIpAddress(), channel);
     }
 
     // called when the application stops
     public void closeAllChannels() {
-        for (Channel channel : this.channels.asMap().values()) {
+        for (Channel channel : this.channelsById.values()) {
             channel.gracefullyClose();
         }
     }
 
     // checks if a channel exists + hasn't expired
     public boolean canConnect(String id) {
-        Channel channel = this.channels.getIfPresent(id);
+        Channel channel = this.channelsById.get(id);
         return channel != null && channel.getConnectedCount() < this.channelMaxClients;
     }
 
     // gets a channel if it exists and hasn't expired
     public Channel getChannel(String id) {
-        return this.channels.getIfPresent(id);
+        return this.channelsById.get(id);
     }
 
     // audits channels by removing closed websocket connections
     public void auditChannels() {
-        for (Channel channel : this.channels.asMap().values()) {
+        for (Channel channel : this.channelsById.values()) {
             channel.audit();
         }
     }

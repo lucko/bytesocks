@@ -84,8 +84,8 @@ public final class Bytesocks implements AutoCloseable {
         // setup channels
         this.channelRegistry = new ChannelRegistry(
                 new RateLimiter(
-                    // by default, allow messages at a rate of 30 times every 5 minutes (every 10s)
-                    config.getInt(Option.MSG_RATE_LIMIT_PERIOD, 5),
+                    // by default, allow messages at a rate of 30 times every 2 minutes (every 4s)
+                    config.getInt(Option.MSG_RATE_LIMIT_PERIOD, 2),
                     config.getInt(Option.MSG_RATE_LIMIT, 30)
                 ),
                 config.getInt(Option.CHANNEL_MAX_CLIENTS, 5)
@@ -104,11 +104,11 @@ public final class Bytesocks implements AutoCloseable {
                 config.getString(Option.HOST, "0.0.0.0"),
                 config.getInt(Option.PORT, 8080),
                 this.channelRegistry,
+                config.getInt(Option.CREATE_RATE_LIMIT, 3), // allow up to 3 active channels per IP
                 new RateLimiter(
-                        // by default, allow create/connect (2 calls required) at a rate of 10 times every 30 minutes
-                        // (you can create and connect to 5 channels every 30 mins)
-                        config.getInt(Option.CREATE_RATE_LIMIT_PERIOD, 30),
-                        config.getInt(Option.CREATE_RATE_LIMIT, 10)
+                        // by default, allow connects at a rate of 30 times every 10 minutes (every 20s)
+                        config.getInt(Option.CONNECT_RATE_LIMIT_PERIOD, 10),
+                        config.getInt(Option.CONNECT_RATE_LIMIT, 30)
                 ),
                 new TokenGenerator(config.getInt(Option.KEY_LENGTH, 7))
         ));

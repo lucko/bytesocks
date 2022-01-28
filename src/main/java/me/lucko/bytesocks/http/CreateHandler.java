@@ -47,12 +47,12 @@ public final class CreateHandler implements Route.Handler {
     private static final Logger LOGGER = LogManager.getLogger(CreateHandler.class);
 
     private final ChannelRegistry channelRegistry;
-    private final RateLimiter rateLimiter;
+    private final int rateLimit;
     private final TokenGenerator tokenGenerator;
 
-    public CreateHandler(ChannelRegistry channelRegistry, RateLimiter rateLimiter, TokenGenerator tokenGenerator) {
+    public CreateHandler(ChannelRegistry channelRegistry, int rateLimit, TokenGenerator tokenGenerator) {
         this.channelRegistry = channelRegistry;
-        this.rateLimiter = rateLimiter;
+        this.rateLimit = rateLimit;
         this.tokenGenerator = tokenGenerator;
     }
 
@@ -61,7 +61,7 @@ public final class CreateHandler implements Route.Handler {
         String ipAddress = BytesocksServer.getIpAddress(ctx);
 
         // check rate limits
-        if (this.rateLimiter.check(ipAddress)) {
+        if (this.channelRegistry.getChannelCount(ipAddress) >= this.rateLimit) {
             throw new StatusCodeException(StatusCode.TOO_MANY_REQUESTS, "Rate limit exceeded");
         }
 
@@ -69,7 +69,7 @@ public final class CreateHandler implements Route.Handler {
         String id = this.tokenGenerator.generate();
 
         // register a new channel
-        this.channelRegistry.registerNewChannel(id);
+        this.channelRegistry.registerNewChannel(id, ipAddress);
 
         LOGGER.info("[CREATE]\n" +
                 "    channel id = " + id + "\n" +

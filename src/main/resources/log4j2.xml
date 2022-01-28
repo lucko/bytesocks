@@ -4,6 +4,7 @@
         <Console name="Console">
             <PatternLayout pattern="%highlight{[%d{HH:mm:ss} %level]: %msg%n%xEx}"/>
         </Console>
+        <!--
         <RollingRandomAccessFile name="File" fileName="logs/latest.log"
                                  filePattern="logs/%d{yyyy-MM-dd}-%i.log.gz"
                                  immediateFlush="false">
@@ -13,12 +14,13 @@
                 <OnStartupTriggeringPolicy/>
             </Policies>
         </RollingRandomAccessFile>
+        -->
     </Appenders>
 
     <Loggers>
         <Root level="info">
             <AppenderRef ref="Console"/>
-            <AppenderRef ref="File"/>
+            <!-- <AppenderRef ref="File"/> -->
         </Root>
     </Loggers>
 </Configuration>

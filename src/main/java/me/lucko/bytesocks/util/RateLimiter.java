@@ -48,7 +48,6 @@ public class RateLimiter {
     }
 
     public boolean check(String ipAddress) {
-        //noinspection ConstantConditions
         return this.rateLimiter.get(ipAddress).incrementAndGet() > this.actionsPerCycle;
     }
 }

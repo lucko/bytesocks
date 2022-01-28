@@ -117,8 +117,10 @@ public class Configuration {
         KEY_LENGTH("keyLength", "bytesocks.misc.keylength"),
         CHANNEL_MAX_CLIENTS("channelMaxClients", "bytesocks.misc.maxclients"),
 
-        CREATE_RATE_LIMIT_PERIOD("createRateLimitPeriodMins", "bytesocks.ratelimit.create.period"), // minutes
         CREATE_RATE_LIMIT("createRateLimit", "bytesocks.ratelimit.create.amount"),
+
+        CONNECT_RATE_LIMIT_PERIOD("connectRateLimitPeriodMins", "bytesocks.ratelimit.connect.period"), // minutes
+        CONNECT_RATE_LIMIT("connectRateLimit", "bytesocks.ratelimit.connect.amount"),
 
         MSG_RATE_LIMIT_PERIOD("msgRateLimitPeriodMins", "bytesocks.ratelimit.msg.period"), // minutes
         MSG_RATE_LIMIT("msgRateLimit", "bytesocks.ratelimit.msg.amount");
