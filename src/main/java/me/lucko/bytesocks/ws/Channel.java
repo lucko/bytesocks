@@ -50,19 +50,19 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
     private static final Logger LOGGER = LogManager.getLogger(Channel.class);
 
     public static final Gauge CLIENTS_GAUGE = Gauge.build()
-            .name("clients")
+            .name("bytesocks_clients")
             .help("The number of active clients")
             .labelNames("useragent")
             .register();
 
     public static final Counter MESSAGES_COUNTER = Counter.build()
-            .name("messages")
+            .name("bytesocks_messages_total")
             .help("The number of messages handled")
             .labelNames("useragent")
             .register();
 
     public static final Summary MESSAGES_SIZE_SUMMARY = Summary.build()
-            .name("messages_size_bytes")
+            .name("bytesocks_messages_size_bytes")
             .help("The size of messages processed")
             .labelNames("useragent")
             .register();

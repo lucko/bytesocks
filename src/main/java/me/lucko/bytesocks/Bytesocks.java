@@ -41,6 +41,7 @@ import org.apache.logging.log4j.io.IoBuilder;
 
 import io.jooby.ExecutionMode;
 import io.jooby.Jooby;
+import io.prometheus.client.hotspot.DefaultExports;
 
 import java.nio.file.Paths;
 import java.util.concurrent.Executors;
@@ -99,11 +100,16 @@ public final class Bytesocks implements AutoCloseable {
         // audit channels every second
         executor.scheduleAtFixedRate(this.channelRegistry::auditChannels, 1, 1, TimeUnit.SECONDS);
 
+        boolean metrics = config.getBoolean(Option.METRICS, false);
+        if (metrics) {
+            DefaultExports.initialize();
+        }
+
         // setup the web server
         this.server = (BytesocksServer) Jooby.createApp(new String[0], ExecutionMode.EVENT_LOOP, () -> new BytesocksServer(
                 config.getString(Option.HOST, "0.0.0.0"),
                 config.getInt(Option.PORT, 8080),
-                config.getBoolean(Option.METRICS, true),
+                metrics,
                 this.channelRegistry,
                 config.getInt(Option.CREATE_RATE_LIMIT, 3), // allow up to 3 active channels per IP
                 new RateLimiter(

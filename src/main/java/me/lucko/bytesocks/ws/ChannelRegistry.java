@@ -42,7 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ChannelRegistry {
 
     public static final Gauge CHANNELS_GAUGE = Gauge.build()
-            .name("channels")
+            .name("bytesocks_channels")
             .help("The number of active channels")
             .register();
 
