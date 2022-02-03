@@ -26,7 +26,6 @@
 package me.lucko.bytesocks.http;
 
 import me.lucko.bytesocks.BytesocksServer;
-import me.lucko.bytesocks.util.RateLimiter;
 import me.lucko.bytesocks.util.TokenGenerator;
 import me.lucko.bytesocks.ws.ChannelRegistry;
 

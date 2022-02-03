@@ -103,6 +103,7 @@ public final class Bytesocks implements AutoCloseable {
         this.server = (BytesocksServer) Jooby.createApp(new String[0], ExecutionMode.EVENT_LOOP, () -> new BytesocksServer(
                 config.getString(Option.HOST, "0.0.0.0"),
                 config.getInt(Option.PORT, 8080),
+                config.getBoolean(Option.METRICS, true),
                 this.channelRegistry,
                 config.getInt(Option.CREATE_RATE_LIMIT, 3), // allow up to 3 active channels per IP
                 new RateLimiter(

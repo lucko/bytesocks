@@ -35,6 +35,9 @@ import io.jooby.WebSocket;
 import io.jooby.WebSocketCloseStatus;
 import io.jooby.WebSocketMessage;
 import io.jooby.internal.WebSocketMessageImpl;
+import io.prometheus.client.Counter;
+import io.prometheus.client.Gauge;
+import io.prometheus.client.Summary;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,6 +49,25 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
     /** Logger instance */
     private static final Logger LOGGER = LogManager.getLogger(Channel.class);
 
+    public static final Gauge CLIENTS_GAUGE = Gauge.build()
+            .name("clients")
+            .help("The number of active clients")
+            .labelNames("useragent")
+            .register();
+
+    public static final Counter MESSAGES_COUNTER = Counter.build()
+            .name("messages")
+            .help("The number of messages handled")
+            .labelNames("useragent")
+            .register();
+
+    public static final Summary MESSAGES_SIZE_SUMMARY = Summary.build()
+            .name("messages_size_bytes")
+            .help("The size of messages processed")
+            .labelNames("useragent")
+            .register();
+
+    /** The channel registry */
     private final ChannelRegistry registry;
 
     /** The channel id */
@@ -96,7 +118,12 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
 
     @Override
     public void onConnect(@Nonnull WebSocket ws) {
-        this.sockets.add(ws);
+        String label = BytesocksServer.getLabel(ws.getContext());
+        ws.attribute("label", label);
+
+        if (this.sockets.add(ws)) {
+            CLIENTS_GAUGE.labels(label).inc();
+        }
 
         LOGGER.info("[CONNECTED]\n" +
                 "    channel id = " + this.id + "\n" +
@@ -107,7 +134,9 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
 
     @Override
     public void onClose(@Nonnull WebSocket ws, @Nonnull WebSocketCloseStatus status) {
-        this.sockets.remove(ws);
+        if (this.sockets.remove(ws)) {
+            CLIENTS_GAUGE.labels(ws.attribute("label")).dec();
+        }
 
         LOGGER.info("[DISCONNECTED]\n" +
                 "    channel id = " + this.id + "\n" +
@@ -136,13 +165,6 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
 
         byte[] msg = ((WebSocketMessageImpl) message).bytes();
 
-        //LOGGER.info("[MESSAGE]\n" +
-        //        "    channel id = " + this.id + "\n" +
-        //        "    connected count = " + this.sockets.size() + "\n" +
-        //        "    message length = " + msg.length + "\n" +
-        //        BytesocksServer.describeForLogger(ws.getContext())
-        //);
-
         // forward message
         for (WebSocket socket : this.sockets) {
             if (socket.equals(ws)) {
@@ -154,6 +176,10 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
 
             socket.send(msg);
         }
+
+        String label = ws.attribute("label");
+        MESSAGES_COUNTER.labels(label).inc();
+        MESSAGES_SIZE_SUMMARY.labels(label).observe(msg.length);
     }
 
     @Override

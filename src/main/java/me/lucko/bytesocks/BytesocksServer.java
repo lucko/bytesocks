@@ -26,6 +26,7 @@
 package me.lucko.bytesocks;
 
 import me.lucko.bytesocks.http.CreateHandler;
+import me.lucko.bytesocks.http.MetricsHandler;
 import me.lucko.bytesocks.http.PreConnectHandler;
 import me.lucko.bytesocks.util.RateLimiter;
 import me.lucko.bytesocks.util.TokenGenerator;
@@ -53,7 +54,7 @@ public class BytesocksServer extends Jooby {
     /** Logger instance */
     private static final Logger LOGGER = LogManager.getLogger(BytesocksServer.class);
 
-    public BytesocksServer(String host, int port, ChannelRegistry channelRegistry, int createRateLimit, RateLimiter connectRateLimiter, TokenGenerator tokenGenerator) {
+    public BytesocksServer(String host, int port, boolean metrics, ChannelRegistry channelRegistry, int createRateLimit, RateLimiter connectRateLimiter, TokenGenerator tokenGenerator) {
         ServerOptions serverOpts = new ServerOptions();
         serverOpts.setHost(host);
         serverOpts.setPort(port);
@@ -90,6 +91,11 @@ public class BytesocksServer extends Jooby {
             return "{\"status\":\"ok\"}";
         });
 
+        // metrics endpoint
+        if (metrics) {
+            get("/metrics", new MetricsHandler());
+        }
+
         decorator(new CorsHandler(new Cors()
                 .setUseCredentials(false)
                 .setMaxAge(Duration.ofDays(1))));
@@ -108,6 +114,20 @@ public class BytesocksServer extends Jooby {
             ipAddress = ctx.getRemoteAddress();
         }
         return ipAddress;
+    }
+
+    public static String getLabel(Context ctx) {
+        String origin = ctx.header("Origin").valueOrNull();
+        if (origin != null) {
+            return origin;
+        }
+
+        String userAgent = ctx.header("User-Agent").valueOrNull();
+        if (userAgent != null) {
+            return userAgent;
+        }
+
+        return "unknown";
     }
 
     public static String describeForLogger(Context ctx) {

@@ -94,6 +94,10 @@ public class Configuration {
         return get(option, def, Long::parseLong, JsonElement::getAsLong);
     }
 
+    public boolean getBoolean(Option option, boolean def) {
+        return get(option, def, Boolean::parseBoolean, JsonElement::getAsBoolean);
+    }
+
     public Map<String, Long> getLongMap(Option option) {
         return get(option, ImmutableMap.of(),
                 str -> Splitter.on(',').withKeyValueSeparator('=').split(str).entrySet().stream()
@@ -113,6 +117,8 @@ public class Configuration {
 
         HOST("host", "bytesocks.http.host"),
         PORT("port", "bytesocks.http.port"),
+
+        METRICS("metricsEnabled", "bytesocks.metrics.enabled"),
 
         KEY_LENGTH("keyLength", "bytesocks.misc.keylength"),
         CHANNEL_MAX_CLIENTS("channelMaxClients", "bytesocks.misc.maxclients"),

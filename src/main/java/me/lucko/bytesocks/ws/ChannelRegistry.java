@@ -31,6 +31,8 @@ import com.google.common.collect.Multimaps;
 
 import me.lucko.bytesocks.util.RateLimiter;
 
+import io.prometheus.client.Gauge;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -38,6 +40,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * A registry of {@link Channel}s.
  */
 public class ChannelRegistry {
+
+    public static final Gauge CHANNELS_GAUGE = Gauge.build()
+            .name("channels")
+            .help("The number of active channels")
+            .register();
 
     /* The channels in the registry */
     private final Map<String, Channel> channelsById = new ConcurrentHashMap<>();
@@ -59,6 +66,7 @@ public class ChannelRegistry {
         Channel channel = new Channel(this, id, ipAddress, this.sendRateLimiter);
         this.channelsById.put(id, channel);
         this.channelsByCreatorIpAddress.put(ipAddress, channel);
+        CHANNELS_GAUGE.inc();
     }
 
     // called to check rate limits
@@ -70,6 +78,7 @@ public class ChannelRegistry {
     public void channelClosed(Channel channel) {
         this.channelsById.remove(channel.getId());
         this.channelsByCreatorIpAddress.remove(channel.getCreatorIpAddress(), channel);
+        CHANNELS_GAUGE.dec();
     }
 
     // called when the application stops
