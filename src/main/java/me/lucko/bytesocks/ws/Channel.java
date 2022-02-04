@@ -135,7 +135,8 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
     @Override
     public void onClose(@Nonnull WebSocket ws, @Nonnull WebSocketCloseStatus status) {
         if (this.sockets.remove(ws)) {
-            CLIENTS_GAUGE.labels(ws.attribute("label")).dec();
+            String label = ws.attribute("label");
+            CLIENTS_GAUGE.labels(label).dec();
         }
 
         LOGGER.info("[DISCONNECTED]\n" +
