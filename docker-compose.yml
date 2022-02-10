@@ -9,6 +9,3 @@ services:
       # You can configure bytesocks using
       # environment variables.
       BYTESOCKS_MISC_KEYLENGTH: 15
-
-volumes:
-  data: {}
