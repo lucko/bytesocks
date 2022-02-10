@@ -66,7 +66,6 @@ public class ChannelRegistry {
         Channel channel = new Channel(this, id, ipAddress, this.sendRateLimiter);
         this.channelsById.put(id, channel);
         this.channelsByCreatorIpAddress.put(ipAddress, channel);
-        CHANNELS_GAUGE.inc();
     }
 
     // called to check rate limits
@@ -78,7 +77,6 @@ public class ChannelRegistry {
     public void channelClosed(Channel channel) {
         this.channelsById.remove(channel.getId());
         this.channelsByCreatorIpAddress.remove(channel.getCreatorIpAddress(), channel);
-        CHANNELS_GAUGE.dec();
     }
 
     // called when the application stops
@@ -104,6 +102,7 @@ public class ChannelRegistry {
         for (Channel channel : this.channelsById.values()) {
             channel.audit();
         }
+        CHANNELS_GAUGE.set(this.channelsById.size());
     }
 
 }

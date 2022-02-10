@@ -41,6 +41,7 @@ import io.prometheus.client.Summary;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 
@@ -74,6 +75,8 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
     private final String id;
     /** The ip address of the client that created the channel */
     private final String creatorIpAddress;
+    /** The time when the channel was created */
+    private final long creationTime = System.currentTimeMillis();
     /** A collection of connected sockets */
     private final Set<WebSocket> sockets = ConcurrentHashMap.newKeySet();
     /** The rate limiter */
@@ -105,6 +108,11 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
     }
 
     public void audit() {
+        if (this.sockets.isEmpty() && (System.currentTimeMillis() - this.creationTime) > TimeUnit.MINUTES.toMillis(5)) {
+            close("no joins");
+            return;
+        }
+
         for (WebSocket socket : this.sockets) {
             if (!socket.isOpen()) {
                 onClose(socket, WebSocketCloseStatus.GOING_AWAY);
@@ -112,7 +120,11 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
         }
     }
 
-    public void close() {
+    public void close(String reason) {
+        LOGGER.info("[CLOSED]\n" +
+                "    channel id = " + this.id + "\n" +
+                "    reason = " + reason + "\n"
+        );
         this.registry.channelClosed(this);
     }
 
@@ -147,10 +159,7 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
         );
 
         if (this.sockets.isEmpty()) {
-            LOGGER.info("[CLOSED]\n" +
-                    "    channel id = " + this.id + "\n"
-            );
-            close();
+            close("no clients");
         }
     }
 
