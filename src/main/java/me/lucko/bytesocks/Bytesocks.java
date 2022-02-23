@@ -119,6 +119,11 @@ public final class Bytesocks implements AutoCloseable {
                 ),
                 new TokenGenerator(config.getInt(Option.KEY_LENGTH, 7))
         ));
+
+        // schedule sockets cleanup
+        executor.scheduleAtFixedRate(this.server::cleanupSocketsMap, 3, 30, TimeUnit.SECONDS);
+
+        // start server
         this.server.start();
     }
 

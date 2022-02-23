@@ -49,19 +49,15 @@ import io.jooby.internal.netty.NettyWebSocket;
 
 import java.lang.reflect.Field;
 import java.time.Duration;
-import java.util.AbstractList;
-import java.util.AbstractMap;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.ConcurrentMap;
-import java.util.function.Function;
 
 public class BytesocksServer extends Jooby {
 
     /** Logger instance */
     private static final Logger LOGGER = LogManager.getLogger(BytesocksServer.class);
+
+    private final Map<?, ?> internalSocketsMap;
 
     public BytesocksServer(String host, int port, boolean metrics, ChannelRegistry channelRegistry, int createRateLimit, RateLimiter connectRateLimiter, TokenGenerator tokenGenerator) {
         ServerOptions serverOpts = new ServerOptions();
@@ -117,10 +113,19 @@ public class BytesocksServer extends Jooby {
         ws("/{id:[a-zA-Z0-9]+}", new ConnectHandler(channelRegistry));
 
         // patch memory leak issue
+        Map<?, ?> socketsMap = null;
         try {
-            fixJoobyMemoryLeak();
+            socketsMap = getAllSocketsMap();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        this.internalSocketsMap = socketsMap;
+    }
+
+    public void cleanupSocketsMap() {
+        Map<?, ?> map = this.internalSocketsMap;
+        if (map != null) {
+            map.clear();
         }
     }
 
@@ -157,38 +162,10 @@ public class BytesocksServer extends Jooby {
     }
 
     // workaround for a jooby bug where web sockets don't get removed from NettyWebSocket#all
-    private static void fixJoobyMemoryLeak() throws Exception {
+    private static Map<?, ?> getAllSocketsMap() throws Exception {
         Field staticMapField = NettyWebSocket.class.getDeclaredField("all");
         staticMapField.setAccessible(true);
-        staticMapField.set(null, NoopMap.INSTANCE);
-    }
-
-    private static final class NoopMap extends AbstractMap<String, List<NettyWebSocket>> implements ConcurrentMap<String, List<NettyWebSocket>> {
-        private static final NoopMap INSTANCE = new NoopMap();
-
-        @Override
-        public List<NettyWebSocket> computeIfAbsent(String key, Function<? super String, ? extends List<NettyWebSocket>> mappingFunction) {
-            return NoopList.INSTANCE;
-        }
-
-        @Override public Set<Entry<String, List<NettyWebSocket>>> entrySet() { return Collections.emptySet(); }
-        @Override public List<NettyWebSocket> get(Object key) { return null; }
-        @Override public List<NettyWebSocket> getOrDefault(Object key, List<NettyWebSocket> defaultValue) { return null; }
-        @Override public List<NettyWebSocket> putIfAbsent(String key, List<NettyWebSocket> value) { return null; }
-        @Override public boolean remove(Object key, Object value) { return false; }
-        @Override public boolean replace(String key, List<NettyWebSocket> oldValue, List<NettyWebSocket> newValue) { return false; }
-        @Override public List<NettyWebSocket> replace(String key, List<NettyWebSocket> value) { return null; }
-    }
-
-    private static final class NoopList extends AbstractList<NettyWebSocket> {
-        private static final NoopList INSTANCE = new NoopList();
-
-        @Override public NettyWebSocket set(int index, NettyWebSocket element) { return null; }
-        @Override public boolean add(NettyWebSocket nettyWebSocket) { return true; }
-        @Override public boolean remove(Object o) { return true; }
-        @Override public NettyWebSocket remove(int index) { return null; }
-        @Override public NettyWebSocket get(int index) { return null; }
-        @Override public int size() { return 0; }
+        return (Map<?, ?>) staticMapField.get(null);
     }
 
 }
