@@ -45,19 +45,14 @@ import io.jooby.MediaType;
 import io.jooby.ServerOptions;
 import io.jooby.StatusCode;
 import io.jooby.exception.StatusCodeException;
-import io.jooby.internal.netty.NettyWebSocket;
 
-import java.lang.reflect.Field;
 import java.time.Duration;
-import java.util.Map;
 import java.util.concurrent.CompletionException;
 
 public class BytesocksServer extends Jooby {
 
     /** Logger instance */
     private static final Logger LOGGER = LogManager.getLogger(BytesocksServer.class);
-
-    private final Map<?, ?> internalSocketsMap;
 
     public BytesocksServer(String host, int port, boolean metrics, ChannelRegistry channelRegistry, int createRateLimit, RateLimiter connectRateLimiter, TokenGenerator tokenGenerator) {
         ServerOptions serverOpts = new ServerOptions();
@@ -111,22 +106,6 @@ public class BytesocksServer extends Jooby {
         // define connect handlers
         before(new PreConnectHandler(channelRegistry, connectRateLimiter));
         ws("/{id:[a-zA-Z0-9]+}", new ConnectHandler(channelRegistry));
-
-        // patch memory leak issue
-        Map<?, ?> socketsMap = null;
-        try {
-            socketsMap = getAllSocketsMap();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        this.internalSocketsMap = socketsMap;
-    }
-
-    public void cleanupSocketsMap() {
-        Map<?, ?> map = this.internalSocketsMap;
-        if (map != null) {
-            map.clear();
-        }
     }
 
     public static String getIpAddress(Context ctx) {
@@ -159,13 +138,6 @@ public class BytesocksServer extends Jooby {
         return "    user agent = " + userAgent + "\n" +
                 "    ip = " + ipAddress + "\n" +
                 (origin.equals("null") ? "" : "    origin = " + origin + "\n");
-    }
-
-    // workaround for a jooby bug where web sockets don't get removed from NettyWebSocket#all
-    private static Map<?, ?> getAllSocketsMap() throws Exception {
-        Field staticMapField = NettyWebSocket.class.getDeclaredField("all");
-        staticMapField.setAccessible(true);
-        return (Map<?, ?>) staticMapField.get(null);
     }
 
 }
