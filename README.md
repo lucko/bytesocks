@@ -1,6 +1,12 @@
-# bytesocks 🧦
+<h1 align="center">
+	<img
+		alt="bytesocks"
+		src="https://i.imgur.com/hZy89YS.png">
+</h1>
 
-bytesocks is a fast & lightweight WebSocket server.
+<h3 align="center">
+  bytesocks is a fast & lightweight WebSocket server.
+</h3>
 
 It allows clients to create "**channels**", connect using the WebSocket protocol and **exchange messages with other clients** in the same channel.
 
