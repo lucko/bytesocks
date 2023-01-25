@@ -61,6 +61,10 @@ public final class CreateHandler implements Route.Handler {
 
         // check rate limits
         if (this.channelRegistry.getChannelCount(ipAddress) >= this.rateLimit) {
+            LOGGER.info("[RATELIMIT]\n" +
+                    "    type = create" + "\n" +
+                    BytesocksServer.describeForLogger(ctx)
+            );
             throw new StatusCodeException(StatusCode.TOO_MANY_REQUESTS, "Rate limit exceeded");
         }
 

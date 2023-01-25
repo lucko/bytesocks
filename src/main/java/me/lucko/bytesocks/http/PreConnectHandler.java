@@ -30,6 +30,9 @@ import me.lucko.bytesocks.util.RateLimiter;
 import me.lucko.bytesocks.util.TokenGenerator;
 import me.lucko.bytesocks.ws.ChannelRegistry;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import io.jooby.Context;
 import io.jooby.Route;
 import io.jooby.StatusCode;
@@ -38,6 +41,9 @@ import io.jooby.exception.StatusCodeException;
 import javax.annotation.Nonnull;
 
 public class PreConnectHandler implements Route.Before {
+
+    /** Logger instance */
+    private static final Logger LOGGER = LogManager.getLogger(PreConnectHandler.class);
 
     private final ChannelRegistry channelRegistry;
     private final RateLimiter rateLimiter;
@@ -59,6 +65,11 @@ public class PreConnectHandler implements Route.Before {
 
         // check rate limits
         if (this.rateLimiter.check(ipAddress)) {
+            LOGGER.info("[RATELIMIT]\n" +
+                    "    type = pre-connect" + "\n" +
+                    "    channel id = " + id + "\n" +
+                    BytesocksServer.describeForLogger(ctx)
+            );
             throw new StatusCodeException(StatusCode.TOO_MANY_REQUESTS, "Rate limit exceeded");
         }
 

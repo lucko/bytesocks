@@ -169,6 +169,11 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
 
         // check rate limit
         if (this.rateLimiter.check(ipAddress)) {
+            LOGGER.info("[RATELIMIT]\n" +
+                    "    type = messages" + "\n" +
+                    "    channel id = " + this.id + "\n" +
+                    BytesocksServer.describeForLogger(ws.getContext())
+            );
             ws.close(WebSocketCloseStatus.POLICY_VIOLATION);
             return;
         }
