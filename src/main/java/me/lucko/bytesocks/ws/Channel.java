@@ -81,12 +81,15 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
     private final Set<WebSocket> sockets = ConcurrentHashMap.newKeySet();
     /** The rate limiter */
     private final RateLimiter rateLimiter;
+    /** The max number of clients allowed to connect */
+    private final int maxClients;
 
-    public Channel(ChannelRegistry registry, String id, String creatorIpAddress, RateLimiter rateLimiter) {
+    public Channel(ChannelRegistry registry, String id, String creatorIpAddress, RateLimiter rateLimiter, int maxClients) {
         this.registry = registry;
         this.id = id;
         this.creatorIpAddress = creatorIpAddress;
         this.rateLimiter = rateLimiter;
+        this.maxClients = maxClients;
     }
 
     public String getId() {
@@ -99,6 +102,10 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
 
     public int getConnectedCount() {
         return this.sockets.size();
+    }
+
+    public boolean moreClientsAllowed() {
+        return this.sockets.size() < this.maxClients;
     }
 
     public void gracefullyClose() {

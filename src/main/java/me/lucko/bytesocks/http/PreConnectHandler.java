@@ -28,6 +28,7 @@ package me.lucko.bytesocks.http;
 import me.lucko.bytesocks.BytesocksServer;
 import me.lucko.bytesocks.util.RateLimiter;
 import me.lucko.bytesocks.util.TokenGenerator;
+import me.lucko.bytesocks.ws.Channel;
 import me.lucko.bytesocks.ws.ChannelRegistry;
 
 import org.apache.logging.log4j.LogManager;
@@ -74,8 +75,19 @@ public class PreConnectHandler implements Route.Before {
         }
 
         // check if the channel exists
-        if (!this.channelRegistry.canConnect(id)) {
+        Channel channel = this.channelRegistry.getChannel(id);
+        if (channel == null) {
             throw new StatusCodeException(StatusCode.BAD_REQUEST, "Cannot connect to channel");
+        }
+
+        // check if more clients are allowed to join the channel
+        if (!channel.moreClientsAllowed()) {
+            LOGGER.info("[RATELIMIT]\n" +
+                    "    type = max-clients" + "\n" +
+                    "    channel id = " + id + "\n" +
+                    BytesocksServer.describeForLogger(ctx)
+            );
+            throw new StatusCodeException(StatusCode.TOO_MANY_REQUESTS, "Rate limit exceeded");
         }
     }
 

@@ -63,7 +63,7 @@ public class ChannelRegistry {
 
     // called when a HTTP GET request is made to /create
     public void registerNewChannel(String id, String ipAddress) {
-        Channel channel = new Channel(this, id, ipAddress, this.sendRateLimiter);
+        Channel channel = new Channel(this, id, ipAddress, this.sendRateLimiter, this.channelMaxClients);
         this.channelsById.put(id, channel);
         this.channelsByCreatorIpAddress.put(ipAddress, channel);
     }
@@ -84,12 +84,6 @@ public class ChannelRegistry {
         for (Channel channel : this.channelsById.values()) {
             channel.gracefullyClose();
         }
-    }
-
-    // checks if a channel exists + hasn't expired
-    public boolean canConnect(String id) {
-        Channel channel = this.channelsById.get(id);
-        return channel != null && channel.getConnectedCount() < this.channelMaxClients;
     }
 
     // gets a channel if it exists and hasn't expired
