@@ -85,12 +85,6 @@ public class BytesocksServer extends Jooby {
             }
         });
 
-        // healthcheck endpoint
-        get("/health", ctx -> {
-            ctx.setResponseHeader("Cache-Control", "no-cache");
-            return "{\"status\":\"ok\"}";
-        });
-
         // metrics endpoint
         if (metrics) {
             get("/metrics", new MetricsHandler());
@@ -99,6 +93,12 @@ public class BytesocksServer extends Jooby {
         decorator(new CorsHandler(new Cors()
                 .setUseCredentials(false)
                 .setMaxAge(Duration.ofDays(1))));
+
+        // healthcheck endpoint
+        get("/health", ctx -> {
+            ctx.setResponseHeader("Cache-Control", "no-cache");
+            return "{\"status\":\"ok\"}";
+        });
 
         // define create channel handler
         get("/create", new CreateHandler(channelRegistry, createRateLimit, tokenGenerator));
