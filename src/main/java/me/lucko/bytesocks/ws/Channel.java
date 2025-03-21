@@ -25,12 +25,6 @@
 
 package me.lucko.bytesocks.ws;
 
-import me.lucko.bytesocks.BytesocksServer;
-import me.lucko.bytesocks.util.RateLimiter;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import io.jooby.WebSocket;
 import io.jooby.WebSocketCloseStatus;
 import io.jooby.WebSocketMessage;
@@ -38,12 +32,15 @@ import io.jooby.internal.WebSocketMessageImpl;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Summary;
+import me.lucko.bytesocks.BytesocksServer;
+import me.lucko.bytesocks.util.RateLimiter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import javax.annotation.Nonnull;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Nonnull;
 
 public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSocket.OnClose, WebSocket.OnError {
 
@@ -121,10 +118,21 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
         }
 
         for (WebSocket socket : this.sockets) {
-            if (!socket.isOpen()) {
-                onClose(socket, WebSocketCloseStatus.GOING_AWAY);
-            }
+            checkSocketNotOpen(socket);
         }
+    }
+
+    private boolean checkSocketNotOpen(WebSocket ws) {
+        if (!ws.isOpen()) {
+            LOGGER.info("[AUDIT]\n" +
+                    "    channel id = " + this.id + "\n" +
+                    "    reason = socket not open\n" +
+                    BytesocksServer.describeForLogger(ws.getContext())
+            );
+            onClose(ws, WebSocketCloseStatus.GOING_AWAY);
+            return true;
+        }
+        return false;
     }
 
     public void close(String reason) {
@@ -192,8 +200,8 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
             if (socket.equals(ws)) {
                 continue;
             }
-            if (!socket.isOpen()) {
-                onClose(socket, WebSocketCloseStatus.GOING_AWAY);
+            if (checkSocketNotOpen(socket)) {
+                continue;
             }
 
             socket.send(msg);
@@ -215,4 +223,3 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
     }
 
 }
-
