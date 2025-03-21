@@ -28,10 +28,8 @@ package me.lucko.bytesocks.ws;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-
-import me.lucko.bytesocks.util.RateLimiter;
-
 import io.prometheus.client.Gauge;
+import me.lucko.bytesocks.util.RateLimiter;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

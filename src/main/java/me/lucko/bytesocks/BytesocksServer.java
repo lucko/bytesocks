@@ -25,6 +25,15 @@
 
 package me.lucko.bytesocks;
 
+import io.jooby.Context;
+import io.jooby.ExecutionMode;
+import io.jooby.Jooby;
+import io.jooby.MediaType;
+import io.jooby.ServerOptions;
+import io.jooby.StatusCode;
+import io.jooby.exception.StatusCodeException;
+import io.jooby.handler.Cors;
+import io.jooby.handler.CorsHandler;
 import me.lucko.bytesocks.http.CreateHandler;
 import me.lucko.bytesocks.http.MetricsHandler;
 import me.lucko.bytesocks.http.PreConnectHandler;
@@ -32,19 +41,8 @@ import me.lucko.bytesocks.util.RateLimiter;
 import me.lucko.bytesocks.util.TokenGenerator;
 import me.lucko.bytesocks.ws.ChannelRegistry;
 import me.lucko.bytesocks.ws.ConnectHandler;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import io.jooby.Context;
-import io.jooby.Cors;
-import io.jooby.CorsHandler;
-import io.jooby.ExecutionMode;
-import io.jooby.Jooby;
-import io.jooby.MediaType;
-import io.jooby.ServerOptions;
-import io.jooby.StatusCode;
-import io.jooby.exception.StatusCodeException;
 
 import java.time.Duration;
 import java.util.concurrent.CompletionException;
@@ -90,7 +88,7 @@ public class BytesocksServer extends Jooby {
             get("/metrics", new MetricsHandler());
         }
 
-        decorator(new CorsHandler(new Cors()
+        use(new CorsHandler(new Cors()
                 .setUseCredentials(false)
                 .setMaxAge(Duration.ofDays(1))));
 

@@ -25,12 +25,6 @@
 
 package me.lucko.bytesocks.ws;
 
-import me.lucko.bytesocks.BytesocksServer;
-import me.lucko.bytesocks.util.RateLimiter;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import io.jooby.WebSocket;
 import io.jooby.WebSocketCloseStatus;
 import io.jooby.WebSocketMessage;
@@ -38,12 +32,16 @@ import io.jooby.internal.WebSocketMessageImpl;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Summary;
+import me.lucko.bytesocks.BytesocksServer;
+import me.lucko.bytesocks.util.RateLimiter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.websocket.api.exceptions.WebSocketTimeoutException;
 
+import javax.annotation.Nonnull;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Nonnull;
 
 public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSocket.OnClose, WebSocket.OnError {
 
@@ -206,6 +204,10 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
 
     @Override
     public void onError(@Nonnull WebSocket ws, @Nonnull Throwable cause) {
+        if (cause instanceof WebSocketTimeoutException) {
+            return; // ignore
+        }
+
         LOGGER.error("[ERROR]\n" +
                 "    channel id = " + this.id + "\n" +
                 "    connected count = " + this.sockets.size() + "\n" +
