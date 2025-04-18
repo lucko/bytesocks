@@ -25,14 +25,16 @@
 
 package me.lucko.bytesocks.ws;
 
+import me.lucko.bytesocks.BytesocksServer;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import io.jooby.Context;
 import io.jooby.StatusCode;
 import io.jooby.WebSocket;
 import io.jooby.WebSocketConfigurer;
 import io.jooby.exception.StatusCodeException;
-import me.lucko.bytesocks.BytesocksServer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 

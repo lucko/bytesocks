@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   bytesocks:
     image: ghcr.io/lucko/bytesocks
@@ -7,4 +9,3 @@ services:
       # You can configure bytesocks using
       # environment variables.
       BYTESOCKS_MISC_KEYLENGTH: 15
-      BYTESOCKS_RATELIMIT_MSG_AMOUNT: 10000

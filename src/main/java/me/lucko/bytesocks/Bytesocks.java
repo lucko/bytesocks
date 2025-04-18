@@ -26,19 +26,22 @@
 package me.lucko.bytesocks;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.jooby.ExecutionMode;
-import io.jooby.Jooby;
-import io.prometheus.client.hotspot.DefaultExports;
+
 import me.lucko.bytesocks.util.Configuration;
 import me.lucko.bytesocks.util.Configuration.Option;
 import me.lucko.bytesocks.util.EnvVars;
 import me.lucko.bytesocks.util.RateLimiter;
 import me.lucko.bytesocks.util.TokenGenerator;
 import me.lucko.bytesocks.ws.ChannelRegistry;
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.io.IoBuilder;
+
+import io.jooby.ExecutionMode;
+import io.jooby.Jooby;
+import io.prometheus.client.hotspot.DefaultExports;
 
 import java.nio.file.Paths;
 import java.util.concurrent.Executors;

@@ -32,8 +32,9 @@ import io.jooby.exception.StatusCodeException;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.common.TextFormat;
 
-import javax.annotation.Nonnull;
 import java.io.OutputStreamWriter;
+
+import javax.annotation.Nonnull;
 
 public final class MetricsHandler implements Route.Handler {
 

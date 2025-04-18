@@ -25,16 +25,18 @@
 
 package me.lucko.bytesocks.http;
 
+import me.lucko.bytesocks.BytesocksServer;
+import me.lucko.bytesocks.util.TokenGenerator;
+import me.lucko.bytesocks.ws.ChannelRegistry;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import io.jooby.Context;
 import io.jooby.MediaType;
 import io.jooby.Route;
 import io.jooby.StatusCode;
 import io.jooby.exception.StatusCodeException;
-import me.lucko.bytesocks.BytesocksServer;
-import me.lucko.bytesocks.util.TokenGenerator;
-import me.lucko.bytesocks.ws.ChannelRegistry;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 
