@@ -15,7 +15,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <application.class>me.lucko.bytesocks.Bytesocks</application.class>
-        <jooby.version>2.13.0</jooby.version>
+        <jooby.version>3.7.0</jooby.version>
     </properties>
 
     <build>
