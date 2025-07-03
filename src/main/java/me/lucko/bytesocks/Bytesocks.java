@@ -103,7 +103,7 @@ public final class Bytesocks implements AutoCloseable {
         }
 
         // setup the web server
-        this.server = (BytesocksServer) Jooby.createApp(new String[0], ExecutionMode.EVENT_LOOP, () -> new BytesocksServer(
+        this.server = (BytesocksServer) Jooby.createApp(ExecutionMode.EVENT_LOOP, () -> new BytesocksServer(
                 config.getString(Option.HOST, "0.0.0.0"),
                 config.getInt(Option.PORT, 8080),
                 metrics,
