@@ -29,6 +29,7 @@ import io.jooby.Context;
 import io.jooby.ExecutionMode;
 import io.jooby.Jooby;
 import io.jooby.MediaType;
+import io.jooby.RouterOptions;
 import io.jooby.ServerOptions;
 import io.jooby.StatusCode;
 import io.jooby.exception.StatusCodeException;
@@ -52,15 +53,8 @@ public class BytesocksServer extends Jooby {
     /** Logger instance */
     private static final Logger LOGGER = LogManager.getLogger(BytesocksServer.class);
 
-    public BytesocksServer(String host, int port, boolean metrics, ChannelRegistry channelRegistry, int createRateLimit, RateLimiter connectRateLimiter, TokenGenerator tokenGenerator) {
-        ServerOptions serverOpts = new ServerOptions();
-        serverOpts.setHost(host);
-        serverOpts.setPort(port);
-        serverOpts.setCompressionLevel(7);
-        setServerOptions(serverOpts);
-
-        setExecutionMode(ExecutionMode.EVENT_LOOP);
-        setTrustProxy(true);
+    public BytesocksServer(boolean metrics, ChannelRegistry channelRegistry, int createRateLimit, RateLimiter connectRateLimiter, TokenGenerator tokenGenerator) {
+        setRouterOptions(new RouterOptions().setTrustProxy(true));
 
         // catch all errors & just return some generic error message
         error((ctx, cause, code) -> {
