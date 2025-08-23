@@ -28,6 +28,9 @@ package me.lucko.bytesocks;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.jooby.ExecutionMode;
 import io.jooby.Jooby;
+import io.jooby.Server;
+import io.jooby.ServerOptions;
+import io.jooby.netty.NettyServer;
 import io.prometheus.client.hotspot.DefaultExports;
 import me.lucko.bytesocks.util.Configuration;
 import me.lucko.bytesocks.util.Configuration.Option;
@@ -73,11 +76,11 @@ public final class Bytesocks implements AutoCloseable {
     private final ChannelRegistry channelRegistry;
 
     /** The web server instance */
-    private final BytesocksServer server;
+    private final Server server;
 
     public Bytesocks(Configuration config) {
         // setup simple logger
-        LOGGER.info("loading bytesockets...");
+        LOGGER.info("loading bytesocks...");
 
         // setup channels
         this.channelRegistry = new ChannelRegistry(
@@ -103,9 +106,13 @@ public final class Bytesocks implements AutoCloseable {
         }
 
         // setup the web server
-        this.server = (BytesocksServer) Jooby.createApp(ExecutionMode.EVENT_LOOP, () -> new BytesocksServer(
-                config.getString(Option.HOST, "0.0.0.0"),
-                config.getInt(Option.PORT, 8080),
+        ServerOptions serverOpts = new ServerOptions();
+        serverOpts.setHost(config.getString(Option.HOST, "0.0.0.0"));
+        serverOpts.setPort(config.getInt(Option.PORT, 8080));
+        serverOpts.setCompressionLevel(7);
+
+        this.server = new NettyServer(serverOpts);
+        this.server.start(Jooby.createApp(this.server, ExecutionMode.EVENT_LOOP, () -> new BytesocksServer(
                 metrics,
                 this.channelRegistry,
                 config.getInt(Option.CREATE_RATE_LIMIT, 3), // allow up to 3 active channels per IP
@@ -115,10 +122,7 @@ public final class Bytesocks implements AutoCloseable {
                         config.getInt(Option.CONNECT_RATE_LIMIT, 30)
                 ),
                 new TokenGenerator(config.getInt(Option.KEY_LENGTH, 7))
-        ));
-
-        // start server
-        this.server.start();
+        )));
     }
 
     @Override
