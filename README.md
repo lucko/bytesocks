@@ -1,7 +1,7 @@
 <h1 align="center">
 	<img
 		alt="bytesocks"
-		src="https://i.imgur.com/hZy89YS.png">
+		src="./.github/banner.png">
 </h1>
 
 <h3 align="center">
@@ -17,16 +17,25 @@ In many ways bytesocks is the "socket" sibling of [bytebin](https://github.com/l
 
 The easiest way to spin up a bytesocks instance is using Docker. Images are automatically created and published to GitHub for each commit/release.
 
-Assuming you're in the bytesocks directory, just run:
-```bash
-$ docker compose up
+Minimal Docker Compose example:
+
+```yaml
+services:
+  bytesocks:
+    image: ghcr.io/lucko/bytesocks
+    ports:
+      - 3000:8080
+    environment:
+      # You can configure bytesocks using
+      # environment variables.
+      BYTESOCKS_MISC_KEYLENGTH: 15
+      BYTESOCKS_RATELIMIT_MSG_AMOUNT: 10000
+
 ```
 
 You should then (hopefully!) be able to access the application at `http://localhost:3000/`.
 
-It's that easy!
-
-## API Usage
+## API
 
 ### Create a channel
 
