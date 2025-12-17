@@ -30,7 +30,7 @@ import io.jooby.ExecutionMode;
 import io.jooby.Jooby;
 import io.jooby.Server;
 import io.jooby.ServerOptions;
-import io.jooby.netty.NettyServer;
+import io.jooby.jetty.JettyServer;
 import io.prometheus.client.hotspot.DefaultExports;
 import me.lucko.bytesocks.util.Configuration;
 import me.lucko.bytesocks.util.Configuration.Option;
@@ -111,7 +111,7 @@ public final class Bytesocks implements AutoCloseable {
         serverOpts.setPort(config.getInt(Option.PORT, 8080));
         serverOpts.setCompressionLevel(7);
 
-        this.server = new NettyServer(serverOpts);
+        this.server = new JettyServer(serverOpts);
         this.server.start(Jooby.createApp(this.server, ExecutionMode.EVENT_LOOP, () -> new BytesocksServer(
                 metrics,
                 this.channelRegistry,
