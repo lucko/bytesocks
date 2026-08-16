@@ -31,6 +31,7 @@ import io.jooby.WebSocketMessage;
 import io.jooby.internal.WebSocketMessageImpl;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
+import io.prometheus.client.Histogram;
 import io.prometheus.client.Summary;
 import me.lucko.bytesocks.BytesocksServer;
 import me.lucko.bytesocks.util.RateLimiter;
@@ -59,8 +60,27 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
             .labelNames("useragent")
             .register();
 
-    public static final Summary MESSAGES_SIZE_SUMMARY = Summary.build()
+    public static final Histogram MESSAGES_SIZE_SUMMARY = Histogram.build()
             .name("bytesocks_messages_size_bytes")
+            .buckets(
+                    100, // 100 B
+                    250, // 250 B
+                    500, // 500 B
+                    750, // 750 B
+                    1000, // 1 KB
+                    2500, // 2.5 KB
+                    5000, // 5 KB
+                    7500, // 7.5 KB
+                    10000, // 10 KB
+                    25000, // 25 KB
+                    50000, // 50 KB
+                    75000, // 75 KB
+                    100000, // 100 KB
+                    250000, // 250 KB
+                    500000, // 500 KB
+                    750000, // 750 KB
+                    1000000 // 1 MB
+            )
             .help("The size of messages processed")
             .labelNames("useragent")
             .register();
