@@ -37,8 +37,6 @@ import me.lucko.bytesocks.ws.ChannelRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.annotation.Nonnull;
-
 public class PreConnectHandler implements Route.Before {
 
     /** Logger instance */
@@ -53,7 +51,7 @@ public class PreConnectHandler implements Route.Before {
     }
 
     @Override
-    public void apply(@Nonnull Context ctx) {
+    public void apply(Context ctx) {
         // get the requested path
         String id = ctx.path("id").value();
         if (id.trim().isEmpty() || id.contains(".") || TokenGenerator.INVALID_TOKEN_PATTERN.matcher(id).find()) {

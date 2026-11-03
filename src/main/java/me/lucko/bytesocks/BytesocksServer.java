@@ -26,11 +26,9 @@
 package me.lucko.bytesocks;
 
 import io.jooby.Context;
-import io.jooby.ExecutionMode;
 import io.jooby.Jooby;
 import io.jooby.MediaType;
 import io.jooby.RouterOptions;
-import io.jooby.ServerOptions;
 import io.jooby.StatusCode;
 import io.jooby.exception.StatusCodeException;
 import io.jooby.handler.Cors;

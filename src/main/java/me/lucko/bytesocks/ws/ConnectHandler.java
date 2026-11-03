@@ -34,8 +34,6 @@ import me.lucko.bytesocks.BytesocksServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.annotation.Nonnull;
-
 public class ConnectHandler implements WebSocket.Initializer {
 
     /** Logger instance */
@@ -48,7 +46,7 @@ public class ConnectHandler implements WebSocket.Initializer {
     }
 
     @Override
-    public void init(@Nonnull Context ctx, @Nonnull WebSocketConfigurer configurer) {
+    public void init(Context ctx, WebSocketConfigurer configurer) {
         String id = ctx.path("id").value();
         Channel channel = this.channelRegistry.getChannel(id);
 
