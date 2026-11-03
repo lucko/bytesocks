@@ -32,13 +32,11 @@ import io.jooby.internal.WebSocketMessageImpl;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
-import io.prometheus.client.Summary;
 import me.lucko.bytesocks.BytesocksServer;
 import me.lucko.bytesocks.util.RateLimiter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.annotation.Nonnull;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -164,7 +162,7 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
     }
 
     @Override
-    public void onConnect(@Nonnull WebSocket ws) {
+    public void onConnect(WebSocket ws) {
         String label = BytesocksServer.getLabel(ws.getContext());
         ws.attribute("label", label);
 
@@ -180,7 +178,7 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
     }
 
     @Override
-    public void onClose(@Nonnull WebSocket ws, @Nonnull WebSocketCloseStatus status) {
+    public void onClose(WebSocket ws, WebSocketCloseStatus status) {
         if (this.sockets.remove(ws)) {
             String label = ws.attribute("label");
             CLIENTS_GAUGE.labels(label).dec();
@@ -199,7 +197,7 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
     }
 
     @Override
-    public void onMessage(@Nonnull WebSocket ws, @Nonnull WebSocketMessage message) {
+    public void onMessage(WebSocket ws, WebSocketMessage message) {
         String ipAddress = BytesocksServer.getIpAddress(ws.getContext());
 
         // check rate limit
@@ -233,7 +231,7 @@ public class Channel implements WebSocket.OnConnect, WebSocket.OnMessage, WebSoc
     }
 
     @Override
-    public void onError(@Nonnull WebSocket ws, @Nonnull Throwable cause) {
+    public void onError(WebSocket ws, Throwable cause) {
         LOGGER.error("[ERROR]\n" +
                 "    channel id = " + this.id + "\n" +
                 "    connected count = " + this.sockets.size() + "\n" +

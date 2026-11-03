@@ -36,8 +36,6 @@ import me.lucko.bytesocks.ws.ChannelRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.annotation.Nonnull;
-
 public final class CreateHandler implements Route.Handler {
 
     /** Logger instance */
@@ -54,7 +52,7 @@ public final class CreateHandler implements Route.Handler {
     }
 
     @Override
-    public String apply(@Nonnull Context ctx) {
+    public String apply(Context ctx) {
         String ipAddress = BytesocksServer.getIpAddress(ctx);
 
         // check rate limits
