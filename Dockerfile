@@ -14,16 +14,14 @@ RUN mvn --no-transfer-progress -B package
 
 
 # --------------
-# RUN STAGE
+# RUNTIME BASE
 # --------------
-FROM eclipse-temurin:25-alpine
+FROM eclipse-temurin:25-alpine AS runtime
 
 RUN addgroup -S bytesocks && adduser -S -G bytesocks bytesocks
 USER bytesocks
 
-# copy app from build stage
 WORKDIR /opt/bytesocks
-COPY --from=build-project /bytesocks/target/bytesocks.jar .
 
 # define a healthcheck
 HEALTHCHECK --interval=1m --timeout=5s \
@@ -32,3 +30,17 @@ HEALTHCHECK --interval=1m --timeout=5s \
 # run the app
 CMD ["java", "-jar", "bytesocks.jar"]
 EXPOSE 8080/tcp
+
+
+# --------------
+# PREBUILT TARGET
+# --------------
+FROM runtime AS prebuilt
+COPY target/bytesocks.jar .
+
+
+# --------------
+# DEFAULT TARGET
+# --------------
+FROM runtime
+COPY --from=build-project /bytesocks/target/bytesocks.jar .
